@@ -3,12 +3,15 @@ function lowpass_matlab_simulate()
     path_output = '.\Result';
     
     % ==================== 参数设置 ====================
+
+    sw_f_stopband = 0;    % 是否绘制阻带频率点
+    decide_f_stopband = -8;    % 计算的阻带频率
     
     R = 2.526 * (10^3);    % 2.526K
     C = 1.8 * (10^(-9));   % 1.8nF
     fc = 1 / (2 * pi * R * C);    % 35kHz
 
-    f = 0:100 * 10 ^ 3;
+    f = 0:300 * 10 ^ 3;
     w = 2 * pi * f;
     H = @(w)1 ./ (1 + 1i * R * C * w);    % 传递函数
 
@@ -32,7 +35,26 @@ function lowpass_matlab_simulate()
     text(fc, abs(H(2 * pi * fc)), ['(', num2str(fc), ', ', num2str(abs(H(2 * pi * fc))), ')'], ...
         'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom');
 
+    
+    if sw_f_stopband == 1
+        for i = 1:length(f)
+            if 20*log10(abs(H(w(i)))) < decide_f_stopband    % 计算大致阻带频率
+                f_stopband = f(i);
+                fprintf('[INFO] RC低通滤波器阻带频率为: %fHz\n', f_stopband);
+                plot(f_stopband, abs(H(2 * pi * f_stopband)), '+');
+                text(f_stopband, abs(H(2 * pi * f_stopband)), ['(', num2str(f_stopband), ', ', num2str(abs(H(2 * pi * f_stopband))), ')'], ...
+                    'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom');
+                break;
+            end
+        end
+    
+        y_max = abs(H(2 * pi * max(f)));
+        line([fc, fc], [0, 1], 'LineStyle', '--', 'Color', 'r');
+        line([f_stopband, f_stopband], [0, 1], 'LineStyle', '--', 'Color', 'r');
+    end
+
     saveas(p_filter_Hw, strcat(path_output, '\RC幅频特性曲线.png'));
+
     hold off;
     close(p_filter_Hw);
 
@@ -49,6 +71,16 @@ function lowpass_matlab_simulate()
     % 绘制截止频率点
     text(fc, 20*log10(abs(H(2 * pi * fc))), ['(', num2str(fc), ', ', num2str(20*log10(abs(H(2 * pi * fc)))), ')'], ...
         'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom');
+
+    if sw_f_stopband == 1
+        plot(f_stopband, 20*log10(abs(H(2 * pi * f_stopband))), '+');
+        text(f_stopband, 20*log10(abs(H(2 * pi * f_stopband))), ['(', num2str(f_stopband), ', ', num2str(20*log10(abs(H(2 * pi * f_stopband)))), ')'], ...
+            'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom');
+    
+        y_max = 20*log10(abs(H(2 * pi * max(f))));
+        line([fc, fc], [0, y_max], 'LineStyle', '--', 'Color', 'r');
+        line([f_stopband, f_stopband], [0, y_max], 'LineStyle', '--', 'Color', 'r')
+    end
 
     saveas(p_filter_Hw_dB, strcat(path_output, '\RC幅频特性曲线dB.png'));
     hold off;
