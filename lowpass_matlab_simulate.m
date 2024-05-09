@@ -5,13 +5,13 @@ function lowpass_matlab_simulate()
     % ==================== 参数设置 ====================
 
     sw_f_stopband = 0;    % 是否绘制阻带频率点
-    decide_f_stopband = -8;    % 计算的阻带频率
+    decide_f_stopband = -9;    % 计算的阻带频率
     
     R = 2.526 * (10^3);    % 2.526K
     C = 1.8 * (10^(-9));   % 1.8nF
     fc = 1 / (2 * pi * R * C);    % 35kHz
 
-    f = 0:300 * 10 ^ 3;
+    f = 0:500 * 10 ^ 3;
     w = 2 * pi * f;
     H = @(w)1 ./ (1 + 1i * R * C * w);    % 传递函数
 
